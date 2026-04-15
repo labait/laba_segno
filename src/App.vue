@@ -1,8 +1,8 @@
 <template>
-  <div class="min-h-screen bg-page font-sans">
+  <div class="min-h-screen font-sans relative z-10 pointer-events-none">
 
     <!-- ── Header ─────────────────────────────────────────────────── -->
-    <header class="bg-navy border-b border-[#4a4a4a] sticky top-0 z-10">
+    <header class="bg-navy border-b border-[#4a4a4a] sticky top-0 z-10 pointer-events-auto">
       <div class="px-6 py-3 flex items-center justify-between">
         <div class="flex items-center gap-3">
           <img src="/logo.svg" alt="Segno" class="h-16" />
@@ -14,7 +14,7 @@
     </header>
 
     <!-- ── Main ───────────────────────────────────────────────────── -->
-    <main class="px-4 sm:px-6 py-8">
+    <main class="px-4 sm:px-6 py-8 pointer-events-auto">
       <!-- Error banner -->
       <div
         v-if="error"
@@ -136,17 +136,68 @@
     </main>
 
     <!-- ── API Key (bottom-left, subtle) ─────────────────────────── -->
-    <ApiKeyInput v-model="apiKey" />
+    <div class="pointer-events-auto">
+      <ApiKeyInput v-model="apiKey" />
+    </div>
+
+  </div>
+
+  <!-- ── Spline 3D Canvas (behind everything, lookat active) ──── -->
+  <div class="fixed inset-0 z-0">
+    <spline-viewer
+      ref="splineRef"
+      url="https://prod.spline.design/t-fCmn38XlfJioMu/scene.splinecode"
+      class="w-full h-full"
+      style="display: block;"
+    ></spline-viewer>
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import ApiKeyInput    from './components/ApiKeyInput.vue'
 import ImageUploader  from './components/ImageUploader.vue'
 import ReviewOptions  from './components/ReviewOptions.vue'
 import FeedbackOutput from './components/FeedbackOutput.vue'
 import { analyzeImage } from './utils/anthropic.js'
+
+const splineRef = ref(null)
+let splineCanvas = null
+
+function getCanvas() {
+  if (splineCanvas) return splineCanvas
+  const viewer = splineRef.value
+  if (!viewer) return null
+  splineCanvas = viewer.shadowRoot?.querySelector('canvas')
+  // Block pointer/mouse leave so Spline never loses track
+  if (splineCanvas) {
+    for (const evt of ['pointerleave', 'pointerout', 'mouseleave', 'mouseout']) {
+      splineCanvas.addEventListener(evt, (e) => { e.stopImmediatePropagation(); e.preventDefault() }, true)
+    }
+  }
+  return splineCanvas
+}
+
+function forwardMouseToSpline(e) {
+  const canvas = getCanvas()
+  if (!canvas) return
+  const opts = {
+    clientX: e.clientX,
+    clientY: e.clientY,
+    bubbles: true,
+    cancelable: true,
+  }
+  canvas.dispatchEvent(new PointerEvent('pointermove', opts))
+  canvas.dispatchEvent(new MouseEvent('mousemove', opts))
+}
+
+onMounted(() => {
+  window.addEventListener('mousemove', forwardMouseToSpline)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('mousemove', forwardMouseToSpline)
+})
 
 const apiKey          = ref(localStorage.getItem('anthropic_api_key') || '')
 const imageData       = ref(null)
