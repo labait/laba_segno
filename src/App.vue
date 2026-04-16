@@ -135,11 +135,6 @@
       </div>
     </main>
 
-    <!-- ── API Key (bottom-left, subtle) ─────────────────────────── -->
-    <div class="pointer-events-auto">
-      <ApiKeyInput v-model="apiKey" />
-    </div>
-
   </div>
 
   <!-- ── Spline 3D Canvas (behind everything, lookat active) ──── -->
@@ -155,7 +150,6 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
-import ApiKeyInput    from './components/ApiKeyInput.vue'
 import ImageUploader  from './components/ImageUploader.vue'
 import ReviewOptions  from './components/ReviewOptions.vue'
 import FeedbackOutput from './components/FeedbackOutput.vue'
@@ -199,7 +193,7 @@ onUnmounted(() => {
   window.removeEventListener('mousemove', forwardMouseToSpline)
 })
 
-const apiKey          = ref(localStorage.getItem('anthropic_api_key') || '')
+const apiKey          = ref('')
 const imageData       = ref(null)
 const selectedCriteria = ref([
   'Leggibilità e chiarezza del segno',
@@ -224,10 +218,6 @@ function handleImage(data) {
 }
 
 async function analyze() {
-  if (!apiKey.value.trim()) {
-    error.value = 'Inserisci la tua API key Anthropic per procedere.'
-    return
-  }
   if (!imageData.value) {
     error.value = "Carica un'immagine prima di procedere."
     return
@@ -243,7 +233,6 @@ async function analyze() {
 
   try {
     feedback.value   = await analyzeImage({
-      apiKey:       apiKey.value.trim(),
       imageDataUrl: imageData.value.dataUrl,
       criteria:     selectedCriteria.value,
       context:      projectContext.value,
