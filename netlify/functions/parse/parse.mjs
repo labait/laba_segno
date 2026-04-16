@@ -5,6 +5,8 @@ const SYSTEM_PROMPT_LOGO =
   'Analizza il logo caricato dallo studente in modo costruttivo e professionale. ' +
   'Se riconosci il logo di un brand esistente, menzionalo esplicitamente indicando il nome del brand e il designer o studio che lo ha progettato, se noto. ' +
   'Valuta aspetti come leggibilità del logotipo, coerenza tra segno e lettering, riconoscibilità del marchio, uso del colore e scalabilità. ' +
+  'IMPORTANTE: verifica sempre se il logo presenta somiglianze significative con loghi di brand esistenti e noti. ' +
+  'Se rilevi possibili plagi o somiglianze evidenti, segnalalo in modo chiaro e diretto indicando il brand, il grado di somiglianza e gli elementi in comune. ' +
   'Struttura il feedback in sezioni chiare con punti di forza e aree di miglioramento. ' +
   'Usa un tono da docente: diretto ma incoraggiante. ' +
   'Rispondi sempre in italiano.'
@@ -15,6 +17,8 @@ const SYSTEM_PROMPT_PITTOGRAMMA =
   'Un pittogramma è un segno iconico puro, senza testo. ' +
   'Valuta aspetti come sintesi formale, riconoscibilità a piccole dimensioni, chiarezza semantica, equilibrio tra pieni e vuoti, e capacità di comunicare senza parole. ' +
   'Se riconosci il pittogramma di un brand o sistema esistente, menzionalo indicando il designer o studio che lo ha progettato, se noto. ' +
+  'IMPORTANTE: verifica sempre se il pittogramma presenta somiglianze significative con pittogrammi o icone di brand esistenti e noti. ' +
+  'Se rilevi possibili plagi o somiglianze evidenti, segnalalo in modo chiaro e diretto indicando il brand, il grado di somiglianza e gli elementi in comune. ' +
   'Struttura il feedback in sezioni chiare con punti di forza e aree di miglioramento. ' +
   'Usa un tono da docente: diretto ma incoraggiante. ' +
   'Rispondi sempre in italiano.'
@@ -48,7 +52,12 @@ export default async (request) => {
       'Fornisci un feedback strutturato per ciascun criterio selezionato. ' +
       'Usa intestazioni ## per ogni criterio. ' +
       'Dentro ogni criterio, usa ### Punti di forza e ### Aree di miglioramento come sottosezioni, ' +
-      'seguite da punti elenco. Non usare **grassetto** per i titoli di sezione, usa sempre ### heading.'
+      'seguite da punti elenco. Non usare **grassetto** per i titoli di sezione, usa sempre ### heading.\n\n' +
+      'ALLA FINE del feedback, aggiungi sempre una sezione:\n' +
+      '## Verifica originalità\n' +
+      'Indica chiaramente se il ' + subject + ' presenta somiglianze con brand esistenti. ' +
+      'Se sì, elenca i brand coinvolti, il grado di somiglianza (alta/media/bassa) e gli elementi in comune. ' +
+      'Se non rilevi somiglianze significative, scrivi che il ' + subject + ' appare originale.'
 
     const systemPrompt = mode === 'pittogramma' ? SYSTEM_PROMPT_PITTOGRAMMA : SYSTEM_PROMPT_LOGO
 
